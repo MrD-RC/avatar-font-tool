@@ -15,17 +15,23 @@ namespace fs = std::filesystem;
  *          |-- 36 x 54
  */
 int main(int argsCount, char *args[]) {
-    int     exitCode = 0;
-    string  path = "./";
+    int                 exitCode = 0;
+    vector<fs::path>    fonts;
+    bool                haveDefaultFont = false;
+    fs::path            path;
     
     // get font directory or set the default to current
     if (argsCount > 1) {
-        path = args[1];
+        string tmpPath = args[1];
 
-        if (path[path.length() - 1] != '/') {
-            path = path + "/";
+        if (tmpPath[tmpPath.length() - 1] != '/') {
+            tmpPath = tmpPath + "/";
         }
+
+        fs::current_path(tmpPath);
     }
+
+    path = fs::current_path();
 
     fs::file_status s = fs::file_status{};
     const fs::path& p = path;
@@ -42,7 +48,24 @@ int main(int argsCount, char *args[]) {
 
         // Output dirs, for testing
         for (auto &dirPath : fontDirectories) {
-            cout << dirPath << endl;
+            // Create objects for fonts
+
+            // Add font object to vector 
+            fonts.push_back(dirPath);
+            
+            
+            if (dirPath.filename() == "default") {
+                haveDefaultFont = true;
+            }
+
+            cout << "Font directory " <<dirPath.filename() << " | Have default font? " << haveDefaultFont << endl;
+        }
+
+        if (!haveDefaultFont) {
+            exitCode = 1;
+            cout << "Default font not found! Check that \"default\" is in " << quoted(path.make_preferred().string()) << endl;
+        } else {
+            // Build fonts from objects
         }
     } else {
         exitCode = 1;

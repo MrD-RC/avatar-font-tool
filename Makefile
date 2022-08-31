@@ -4,13 +4,13 @@
 
 # Compiler settings - Can be customized.
 CC = g++
-CXXFLAGS = -std=c++11 -Wall
+CXXFLAGS = -std=c++20 -Wall
 LDFLAGS = 
 
 # Makefile settings - Can be customized.
 APPNAME = avatar-font-tool
 EXT = .cpp
-SRCDIR = src
+SRCDIR = C:\github\MrD\avatar-font-tool
 OBJDIR = obj
 
 ############## Do not change anything from here downwards! #############
