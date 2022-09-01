@@ -10,7 +10,7 @@ LDFLAGS =
 # Makefile settings - Can be customized.
 APPNAME = avatar-font-tool
 EXT = .cpp
-SRCDIR = C:\github\MrD\avatar-font-tool
+SRCDIR = $(CURDIR)
 OBJDIR = obj
 
 ############## Do not change anything from here downwards! #############

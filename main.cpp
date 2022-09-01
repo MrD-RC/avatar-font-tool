@@ -55,7 +55,7 @@ int main(int argsCount, char *args[]) {
             // Add font object to vector 
             fonts.push_back(af);
             
-            if (dirPath.filename() == "default") {
+            if (af.isFontDefaultFont()) {
                 haveDefaultFont = true;
             }
 

@@ -7,8 +7,10 @@ namespace fs = std::filesystem;
 class AvatarFont {
     public:
         AvatarFont(fs::path);
-        string showDirectory();
+        string  showDirectory();
+        bool    isFontDefaultFont();
     private:
-        fs::path fontPath;
-        string fontSizeFolders[3] = {"36x54", "24x36", "12x18"};
+        bool            isDefaultFont = false;
+        fs::path        fontPath;
+        const string    fontSizeFolders[3] = {"36x54", "24x36", "12x18"};
 };
