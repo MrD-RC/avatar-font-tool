@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <filesystem>
+#include "avatar-font.h"
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -16,7 +17,7 @@ namespace fs = std::filesystem;
  */
 int main(int argsCount, char *args[]) {
     int                 exitCode = 0;
-    vector<fs::path>    fonts;
+    vector<AvatarFont>    fonts;
     bool                haveDefaultFont = false;
     fs::path            path;
     
@@ -49,16 +50,16 @@ int main(int argsCount, char *args[]) {
         // Output dirs, for testing
         for (auto &dirPath : fontDirectories) {
             // Create objects for fonts
+            AvatarFont af(dirPath);
 
             // Add font object to vector 
-            fonts.push_back(dirPath);
-            
+            fonts.push_back(af);
             
             if (dirPath.filename() == "default") {
                 haveDefaultFont = true;
             }
 
-            cout << "Font directory " <<dirPath.filename() << " | Have default font? " << haveDefaultFont << endl;
+            cout << "Font directory " << af.showDirectory() << " | Have default font? " << haveDefaultFont << endl;
         }
 
         if (!haveDefaultFont) {
