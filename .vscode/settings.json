@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "filesystem": "cpp"
-    }
+        "filesystem": "cpp",
+        "*.tcc": "cpp"
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools"
 }
