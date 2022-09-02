@@ -1,6 +1,9 @@
 #include "avatar-font.h"
 #include <iostream>
 #include <filesystem>
+#include <algorithm>
+#include <vector>
+//#include "libraries/CImg.h"
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -55,7 +58,21 @@ AvatarFont::AvatarFont(fs::path fp) {
  * @return true if character retrieval successful
  * @return false if there was a problem
  */
-bool AvatarFont::generateCharacters(AvatarFont defaultFont) {
+bool AvatarFont::generateCharacters(AvatarFont *defaultFont) {
+    cout << "Generating characters for font " << showDirectory() << ". Default Font is ";
+    if (defaultFont == NULL) {
+        cout << "NULL" << endl;
+    } else {
+        cout << defaultFont->showDirectory() << endl;
+    }
+
+    // Work through the directories and store the images.
+    capturePNGCharacters(defaultFont, fontPath36x54, fontPath24x36, fontPath12x18, 36, 54, 24, 36, 12, 18);
+
+    capturePNGCharacters(defaultFont, fontPath24x36, fontPath36x54, fontPath12x18, 24, 36, 36, 54, 12, 18);
+
+    capturePNGCharacters(defaultFont, fontPath12x18, fontPath24x36, fontPath36x54, 12, 18, 24, 36, 36, 54);
+
     return true;
 }
 
@@ -65,4 +82,97 @@ bool AvatarFont::isFontDefaultFont() {
 
 string AvatarFont::showDirectory() {
     return fontPath.filename().string();
+}
+
+
+void AvatarFont::capturePNGCharacters(AvatarFont *defaultFont, fs::path charactersPath, fs::path alt1, fs::path alt2, int thisWidth, int thisHeight, int alt1Width, int alt1Height, int alt2Width, int alt2Height) {
+    int characterIndex = 1;
+
+    for (const auto &file : fs::directory_iterator{charactersPath}) {
+        string extension = file.path().extension().string();
+        transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+        if (extension == ".png") {
+            string filename = file.path().filename().stem().string();
+            cout << "File " << quoted(filename);
+            cout << " | Image " << setfill('0') << setw(3) << characterIndex;
+            // Process the PNG
+            if (filename.find('-') != string::npos) {
+                // This is two characters in one PNG
+                cout << " is two images";
+                
+                std::replace(filename.begin(), filename.end(), '-', ' ');
+                istringstream fNameStream(filename);
+                string tmp;
+                vector<string> filenames;
+                while (fNameStream >> tmp) {
+                    filenames.push_back(tmp);
+                }
+
+                int workingCharacter = stoi(filenames[0]);
+
+                // If we have missing characters, fill the gaps
+                while (characterIndex < workingCharacter) {
+                    // We are missing a character, so handle that
+                    // 1. does it exist in another size folder?
+                    // 2. does it exist in default?
+                    // 3. use a blank character
+
+                    characterIndex++;
+                }
+
+                // Process the characters
+                //cout << filenames[1];
+                characterIndex = stoi(filenames[1]);
+
+                characterIndex++;
+            } else if (filename.find('_') != string::npos) {
+                // This is multiple characters in one PNG
+                cout << " is multiple images";
+
+                std::replace(filename.begin(), filename.end(), '_', ' ');
+                istringstream fNameStream(filename);
+                string tmp;
+                vector<string> filenames;
+                while (fNameStream >> tmp) {
+                    filenames.push_back(tmp);
+                }
+
+                int workingCharacter = stoi(filenames[0]);
+
+                // If we have missing characters, fill the gaps
+                while (characterIndex < workingCharacter) {
+                    // We are missing a character, so handle that
+                    // 1. does it exist in another size folder?
+                    // 2. does it exist in default?
+                    // 3. use a blank character
+
+                    characterIndex++;
+                }
+
+                // Process the characters 
+                characterIndex = stoi(filenames[1]);
+
+                characterIndex++;
+            } else {
+                int workingCharacter = stoi(filename);
+                
+                // If we have missing characters, fill the gaps
+                while (characterIndex < workingCharacter) {
+                    // We are missing a character, so handle that
+                    // 1. does it exist in another size folder?
+                    // 2. does it exist in default?
+                    // 3. use a blank character
+
+                    characterIndex++;
+                }
+
+                // We have a single character, so process it
+                cout << " is single image";
+                characterIndex++;
+            }
+        }
+
+        cout << endl;
+    }
 }

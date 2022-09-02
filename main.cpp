@@ -47,7 +47,7 @@ int main(int argsCount, char *args[]) {
             }
         }
 
-        // Output dirs, for testing
+        // Create the font objects based on the subdirectories of the current directory. These should all be fonts
         for (auto &dirPath : fontDirectories) {
             // Create objects for fonts
             AvatarFont af(dirPath);
@@ -55,24 +55,30 @@ int main(int argsCount, char *args[]) {
             if (af.isFontDefaultFont()) {
                 // Add default font object to start of vector
                 fonts.insert(fonts.begin(), af);
+                // State that we have a default font
                 haveDefaultFont = true;
             } else {
                 // Add font object to vector 
                 fonts.push_back(af);
             }
-
-            cout << "Font directory " << af.showDirectory() << " | Have default font? " << haveDefaultFont << endl;
         }
 
-        for (auto &fontSet : fonts) {
-            cout << "Have font: " << fontSet.showDirectory() << ". Is it the default font? " << ((fontSet.isFontDefaultFont()) ? "Yes" : "No") << endl;
-        }
-
+        // If we don't have a default font. We should give an error message and exit the program
         if (!haveDefaultFont) {
             exitCode = 1;
             cout << "Default font not found! Check that \"default\" is in " << quoted(path.make_preferred().string()) << endl;
-        } else {
-            // Build fonts from objects
+            exit(exitCode);
+        }
+
+        // Now that we have all our font objects, we should prop
+        for (auto &fontSet : fonts) {
+            cout << "Have font: " << fontSet.showDirectory() << ". Is it the default font? " << ((fontSet.isFontDefaultFont()) ? "Yes" : "No") << endl;
+
+            if (fontSet.isFontDefaultFont()) {
+                fontSet.generateCharacters(NULL);
+            } else {
+                fontSet.generateCharacters(&fonts[0]);
+            }
         }
     } else {
         exitCode = 1;
