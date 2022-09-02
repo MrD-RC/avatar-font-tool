@@ -17,5 +17,7 @@ class AvatarFont {
         map<int, string>    characters36X54;
         bool                isDefaultFont = false;
         fs::path            fontPath;
-        const string        fontSizeFolders[3] = {"36x54", "24x36", "12x18"};
+        fs::path            fontPath36x54;
+        fs::path            fontPath24x36;
+        fs::path            fontPath12x18;
 };

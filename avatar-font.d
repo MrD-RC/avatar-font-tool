@@ -1,2 +1,2 @@
-obj/avatar-font.o: c:/github/MrD/avatar-font-tool/avatar-font.cpp \
- c:/github/MrD/avatar-font-tool/avatar-font.h
+obj/avatar-font.o: e:/GitHub/MrD/avatar-font-tool/avatar-font.cpp \
+ e:/GitHub/MrD/avatar-font-tool/avatar-font.h

@@ -64,6 +64,10 @@ int main(int argsCount, char *args[]) {
             cout << "Font directory " << af.showDirectory() << " | Have default font? " << haveDefaultFont << endl;
         }
 
+        for (auto &fontSet : fonts) {
+            cout << "Have font: " << fontSet.showDirectory() << ". Is it the default font? " << ((fontSet.isFontDefaultFont()) ? "Yes" : "No") << endl;
+        }
+
         if (!haveDefaultFont) {
             exitCode = 1;
             cout << "Default font not found! Check that \"default\" is in " << quoted(path.make_preferred().string()) << endl;

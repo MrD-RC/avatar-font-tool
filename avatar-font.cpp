@@ -20,16 +20,30 @@ AvatarFont::AvatarFont(fs::path fp) {
 
     // Check that the directories exist for the different size fonts
     // If they don't, create the directory
-    for (int fd = 0; fd < (end(fontSizeFolders) - begin(fontSizeFolders)); fd++){
-        s = fs::file_status{};
-        const fs::path& p = (fontPath.string() + fontPath.root_directory().string() + fontSizeFolders[fd]);
+    fontPath36x54 = fontPath.string() + fontPath.root_directory().string() + "36x54";
+    fontPath24x36 = fontPath.string() + fontPath.root_directory().string() + "24x36";
+    fontPath12x18 = fontPath.string() + fontPath.root_directory().string() + "12x18";
 
-        dirExists = (fs::status_known(s) ? fs::exists(s) : fs::exists(p));
-
-        if (!dirExists) {
-            fs::create_directory(p);
-        }
+    // 36 x 54 pixels
+    s = fs::file_status{};
+    dirExists = (fs::status_known(s) ? fs::exists(s) : fs::exists(fontPath36x54));
+    if (!dirExists) {
+        fs::create_directory(fontPath36x54);
     }
+
+    // 24 x 36 pixels
+    s = fs::file_status{};
+    dirExists = (fs::status_known(s) ? fs::exists(s) : fs::exists(fontPath24x36));
+    if (!dirExists) {
+        fs::create_directory(fontPath24x36);
+    }
+
+    // 12 x 18 pixels
+    s = fs::file_status{};
+    dirExists = (fs::status_known(s) ? fs::exists(s) : fs::exists(fontPath12x18));
+    if (!dirExists) {
+        fs::create_directory(fontPath12x18);
+    }  
 }
 
 /**
