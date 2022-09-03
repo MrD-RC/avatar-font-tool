@@ -1,7 +1,8 @@
 #include "avatar-font.h"
-#include <iostream>
-#include <filesystem>
 #include <algorithm>
+#include <filesystem>
+#include <iostream>
+#include <map>
 #include <vector>
 //#include "libraries/CImg.h"
 
@@ -32,6 +33,8 @@ AvatarFont::AvatarFont(fs::path fp) {
     dirExists = (fs::status_known(s) ? fs::exists(s) : fs::exists(fontPath36x54));
     if (!dirExists) {
         fs::create_directory(fontPath36x54);
+    } else {
+        getCharacterCount(fontPath36x54);
     }
 
     // 24 x 36 pixels
@@ -39,6 +42,8 @@ AvatarFont::AvatarFont(fs::path fp) {
     dirExists = (fs::status_known(s) ? fs::exists(s) : fs::exists(fontPath24x36));
     if (!dirExists) {
         fs::create_directory(fontPath24x36);
+    } else {
+        getCharacterCount(fontPath24x36);
     }
 
     // 12 x 18 pixels
@@ -46,7 +51,27 @@ AvatarFont::AvatarFont(fs::path fp) {
     dirExists = (fs::status_known(s) ? fs::exists(s) : fs::exists(fontPath12x18));
     if (!dirExists) {
         fs::create_directory(fontPath12x18);
-    }  
+    } else {
+        getCharacterCount(fontPath12x18);
+    }
+}
+
+void AvatarFont::getCharacterCount(fs::path characterPath) {
+    if (fontSize != 512) {
+        string  filename = "";
+        int     characterNumber = 0;
+        for (const auto &file : fs::directory_iterator(characterPath.string())) {
+            filename = file.path().stem().string();
+            characterNumber = stoi(filename);
+
+            if (characterNumber > 256) {
+                fontSize = 512;
+                return;
+            }
+        }
+    }
+
+    return;
 }
 
 /**
@@ -67,11 +92,16 @@ bool AvatarFont::generateCharacters(AvatarFont *defaultFont) {
     }
 
     // Work through the directories and store the images.
-    capturePNGCharacters(defaultFont, fontPath36x54, fontPath24x36, fontPath12x18, 36, 54, 24, 36, 12, 18);
+    //capturePNGCharacters(defaultFont, characters36X54, fontPath36x54, fontPath24x36, fontPath12x18, 36, 54, 24, 36, 12, 18);
 
-    capturePNGCharacters(defaultFont, fontPath24x36, fontPath36x54, fontPath12x18, 24, 36, 36, 54, 12, 18);
+    capturePNGCharacters(defaultFont, characters24X36, fontPath24x36, fontPath36x54, fontPath12x18, 24, 36, 36, 54, 12, 18);
 
-    capturePNGCharacters(defaultFont, fontPath12x18, fontPath24x36, fontPath36x54, 12, 18, 24, 36, 36, 54);
+    cout << "MAP:" << endl;
+    for (const auto &[key, value] : characters24X36) {
+        cout << "| " << setfill('0') << setw(3) << key << " | " << value << " |" << endl;
+    }
+
+    //capturePNGCharacters(defaultFont, characters24X36, fontPath12x18, fontPath24x36, fontPath36x54, 12, 18, 24, 36, 36, 54);
 
     return true;
 }
@@ -84,9 +114,27 @@ string AvatarFont::showDirectory() {
     return fontPath.filename().string();
 }
 
+int AvatarFont::getFontSize() {
+    return fontSize;
+}
 
-void AvatarFont::capturePNGCharacters(AvatarFont *defaultFont, fs::path charactersPath, fs::path alt1, fs::path alt2, int thisWidth, int thisHeight, int alt1Width, int alt1Height, int alt2Width, int alt2Height) {
+map<int, string> &AvatarFont::getFontMap(string fontSize) {
+    if (fontSize == "36x54") {
+        return characters36X54;
+    } else if (fontSize == "24x36") {
+        return characters24X36;
+    } 
+    
+    // else (fontSize == "12x18")
+    return characters12X18;
+}
+
+
+void AvatarFont::capturePNGCharacters(AvatarFont *defaultFont, map<int, string> &characterMap, fs::path charactersPath, fs::path alt1, fs::path alt2, int thisWidth, int thisHeight, int alt1Width, int alt1Height, int alt2Width, int alt2Height) {
     int characterIndex = 1;
+    int lastCharacter = (isDefaultFont) ? fontSize : defaultFont->getFontSize();
+
+    cout << "Capturing characters for " << quoted(charactersPath.string()) << " with a total of " << lastCharacter << " characters. " << endl;
 
     for (const auto &file : fs::directory_iterator{charactersPath}) {
         string extension = file.path().extension().string();
@@ -94,13 +142,10 @@ void AvatarFont::capturePNGCharacters(AvatarFont *defaultFont, fs::path characte
 
         if (extension == ".png") {
             string filename = file.path().filename().stem().string();
-            cout << "File " << quoted(filename);
-            cout << " | Image " << setfill('0') << setw(3) << characterIndex;
+
             // Process the PNG
             if (filename.find('-') != string::npos) {
                 // This is two characters in one PNG
-                cout << " is two images";
-                
                 std::replace(filename.begin(), filename.end(), '-', ' ');
                 istringstream fNameStream(filename);
                 string tmp;
@@ -112,24 +157,18 @@ void AvatarFont::capturePNGCharacters(AvatarFont *defaultFont, fs::path characte
                 int workingCharacter = stoi(filenames[0]);
 
                 // If we have missing characters, fill the gaps
-                while (characterIndex < workingCharacter) {
-                    // We are missing a character, so handle that
-                    // 1. does it exist in another size folder?
-                    // 2. does it exist in default?
-                    // 3. use a blank character
-
-                    characterIndex++;
+                if (characterIndex < workingCharacter) {
+                    characterIndex = findMissingCharacters(defaultFont, characterMap, characterIndex, workingCharacter, alt1, alt2, thisWidth, thisHeight, alt1Width, alt1Height, alt2Width, alt2Height);
                 }
 
                 // Process the characters
-                //cout << filenames[1];
-                characterIndex = stoi(filenames[1]);
-
-                characterIndex++;
+                for (const auto &currentFilename : filenames) {
+                    characterMap[characterIndex] = "IMAGE " + currentFilename;
+                    workingCharacter = stoi(currentFilename);
+                    characterIndex++;
+                }
             } else if (filename.find('_') != string::npos) {
                 // This is multiple characters in one PNG
-                cout << " is multiple images";
-
                 std::replace(filename.begin(), filename.end(), '_', ' ');
                 istringstream fNameStream(filename);
                 string tmp;
@@ -141,38 +180,76 @@ void AvatarFont::capturePNGCharacters(AvatarFont *defaultFont, fs::path characte
                 int workingCharacter = stoi(filenames[0]);
 
                 // If we have missing characters, fill the gaps
-                while (characterIndex < workingCharacter) {
-                    // We are missing a character, so handle that
-                    // 1. does it exist in another size folder?
-                    // 2. does it exist in default?
-                    // 3. use a blank character
-
-                    characterIndex++;
+                if (characterIndex < workingCharacter) {
+                    characterIndex = findMissingCharacters(defaultFont, characterMap, characterIndex, workingCharacter, alt1, alt2, thisWidth, thisHeight, alt1Width, alt1Height, alt2Width, alt2Height);
                 }
 
-                // Process the characters 
-                characterIndex = stoi(filenames[1]);
-
-                characterIndex++;
+                // Process the characters
+                for (int fc = stoi(filenames[0]); fc <= stoi(filenames[1]); fc++) {
+                    characterMap[characterIndex] = "IMAGE " + to_string(fc);
+                    workingCharacter = fc;
+                    characterIndex++;
+                }
             } else {
                 int workingCharacter = stoi(filename);
                 
                 // If we have missing characters, fill the gaps
-                while (characterIndex < workingCharacter) {
-                    // We are missing a character, so handle that
-                    // 1. does it exist in another size folder?
-                    // 2. does it exist in default?
-                    // 3. use a blank character
-
-                    characterIndex++;
+                if (characterIndex < workingCharacter) {
+                    characterIndex = findMissingCharacters(defaultFont, characterMap, characterIndex, workingCharacter, alt1, alt2, thisWidth, thisHeight, alt1Width, alt1Height, alt2Width, alt2Height);
                 }
 
                 // We have a single character, so process it
-                cout << " is single image";
+                characterMap[characterIndex] = "IMAGE " + filename;
+
                 characterIndex++;
             }
         }
-
-        cout << endl;
     }
+
+    if (characterIndex < (lastCharacter + 1)) {
+        characterIndex = findMissingCharacters(defaultFont, characterMap, characterIndex, (lastCharacter + 1), alt1, alt2, thisWidth, thisHeight, alt1Width, alt1Height, alt2Width, alt2Height);
+    }
+
+    return;
+}
+
+int AvatarFont::findMissingCharacters(AvatarFont *defaultFont, map<int, string> &characterMap, int characterIndex, int workingCharacter, fs::path alt1, fs::path alt2, int thisWidth, int thisHeight, int alt1Width, int alt1Height, int alt2Width, int alt2Height) {
+    // If we have missing characters, fill the gaps
+    while (characterIndex < workingCharacter) {
+        // We are missing a character, so handle that
+        // 1. does it exist in another size folder?
+        // 2. does it exist in default?
+        // 3. use a blank character
+
+        // Generate the filename of the missing file
+        string searchFile = to_string(characterIndex);
+        size_t searchFileChars = 3;
+        int precision = searchFileChars - min(searchFileChars, searchFile.size());
+        searchFile.insert(0, precision, '0');
+        searchFile += ".png";
+
+        // Check path alt 1
+        fs::path tmpPath = alt1.string() + alt1.root_directory().string() + searchFile;
+        if (fs::exists(tmpPath)) {
+            characterMap[characterIndex] = "ALT1 IMAGE" + searchFile;
+        } else {
+            // Check path alt 1
+            tmpPath = alt2.string() + alt2.root_directory().string() + searchFile;
+            if (fs::exists(tmpPath)) {
+                characterMap[characterIndex] = "ALT2 IMAGE" + searchFile;
+            } else {
+                if (!isDefaultFont) {
+                    string fontSize = to_string(thisWidth) + "x" + to_string(thisHeight);
+
+                    characterMap[characterIndex] = "DEFAULT " + (defaultFont->getFontMap(fontSize))[characterIndex];
+                } else {
+                    characterMap[characterIndex] = "BLANK";
+                }
+            }
+        }
+
+        characterIndex++;
+    }
+
+    return characterIndex;
 }
