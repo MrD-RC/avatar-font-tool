@@ -4,7 +4,6 @@
 #include <iostream>
 #include <map>
 #include <vector>
-//#include "libraries/CImg.h"
 
 using namespace std;
 namespace fs = std::filesystem;
