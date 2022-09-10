@@ -41,6 +41,8 @@ If a character is missing, the tool will try to find the next best alternative t
 
 If the character can't be found in the current **fontset**, one of two things will happen. If the font is the default font, there is no alternative but to fill the space with a blank character. This is pretty useful though, as you only need to draw characters which actually have an icon in them. The blank spaces look after themselves. However, if this is not the default font. The default font will be checked to see if it has a character it can use. The blank character is used when no other options can be found.
 
+Currently, multiple character images are not found when searching for missing font images. This is something I hope to remedy in a future release.
+
 ### Using the tool
 The tool is a simple command line executable. You can put the tool in to the **font root** directory and just run it. Or, you can specify a path where the **font root** is located. There are only two arguments:
 - **font root path** Which is the location of the font root
