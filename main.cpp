@@ -28,6 +28,17 @@ int main(int argsCount, char *args[]) {
     if (argsCount > 1) {
         string tmpPath = args[1];
 
+        if (tmpPath == "?") {
+            cout << "Avatar Font Tool by Mr. D (www.mrd-rc.com)" << endl
+                 << "Command line usage:" << endl
+                 << "no arguments - default use: font root in current directory and no filename prefix" << endl
+                 << "? - this help screen" << endl
+                 << "argument 1 - font root location" << endl
+                 << "argument 2 - filename prefix" << endl;
+
+            exit(exitCode);
+        }
+
         if (tmpPath[tmpPath.length() - 1] != '/') {
             tmpPath = tmpPath + "/";
         }
