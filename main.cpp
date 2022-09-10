@@ -3,6 +3,8 @@
 #include <filesystem>
 #include "avatar-font.h"
 
+#include "image-character.h" // REMOVE AFTER TEST
+
 using namespace std;
 namespace fs = std::filesystem;
 
@@ -20,6 +22,7 @@ int main(int argsCount, char *args[]) {
     vector<AvatarFont>  fonts;
     bool                haveDefaultFont = false;
     fs::path            path;
+    string              fontBaseName = "";
     
     // get font directory or set the default to current
     if (argsCount > 1) {
@@ -30,6 +33,14 @@ int main(int argsCount, char *args[]) {
         }
 
         fs::current_path(tmpPath);
+
+        if (argsCount > 2) {
+            fontBaseName = args[2];
+
+            if (fontBaseName.length() > 0) {
+                fontBaseName+= "_";
+            }
+        }
     }
 
     path = fs::current_path();
@@ -38,7 +49,7 @@ int main(int argsCount, char *args[]) {
     const fs::path& p = path;
     if (fs::status_known(s) ? fs::exists(s) : fs::exists(p)) {
         // The base fonts directory exists.
-
+ 
         // find sub directory for font files
         vector<fs::path> fontDirectories;
         for (const auto &entry : fs::directory_iterator(p)) {
@@ -48,6 +59,7 @@ int main(int argsCount, char *args[]) {
         }
 
         // Create the font objects based on the subdirectories of the current directory. These should all be fonts
+        // First loop through the subdirectories and create the AvatarFont objects
         for (auto &dirPath : fontDirectories) {
             // Create objects for fonts
             AvatarFont af(dirPath);
@@ -70,15 +82,24 @@ int main(int argsCount, char *args[]) {
             exit(exitCode);
         }
 
-        // Now that we have all our font objects, we should prop
+        // Now that we have all our font objects, we should proceed to process. The default font first, then the rest. Missing characters can be filled from default.
         for (auto &fontSet : fonts) {
             cout << "Have font: " << fontSet.showDirectory() << ". Is it the default font? " << ((fontSet.isFontDefaultFont()) ? "Yes" : "No") << endl;
 
+            // Generate the image data from the PNG character files.
             if (fontSet.isFontDefaultFont()) {
-                fontSet.generateCharacters(NULL);
+                AvatarFont null = AvatarFont();
+                fontSet.generateCharacters(null);
             } else {
-                fontSet.generateCharacters(&fonts[0]);
+                fontSet.generateCharacters(fonts[0]);
             }
+
+            // Output the font files. The file name format is fontBaseName_font folder_font width. 
+            // For example with arg fontBaseName set to INAV. INAV_default_24.png
+            // ... or with no fontBaseName set. default_24.png
+            fontSet.generateAvatarPNGFiles(path, fontBaseName);
+
+            cout << "Font generation successful." << endl;
         }
     } else {
         exitCode = 1;

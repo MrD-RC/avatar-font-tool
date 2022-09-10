@@ -1,20 +1,27 @@
+#pragma once
 #include <filesystem>
 
 using namespace std;
 namespace fs = std::filesystem;
 
-struct ImageCharacter {
-    uint8_t*    data = NULL;
-    size_t      size = 0;
-    int         w;
-    int         h;
-    int         channels = 4;
+class ImageCharacter {
+    public:
+        ImageCharacter();
+        ~ImageCharacter();
+        ImageCharacter(const string imageFile);
+        ImageCharacter(int newW, int newH);
+        ImageCharacter(const ImageCharacter &fromCharacter);
 
-    ImageCharacter(const fs::path &imageFile);
-    ImageCharacter(int w, int h) : w(w), h(h);
-    ImageCharacter(const ImageCharacter &fromCharacter);
-    ~ImageCharacter();
+        void copyImage(const ImageCharacter &fromCharacter);
+        bool readImage(const string imageFile);
+        void resizeImage(const string imageFile, int newW, int newH);
+        void setWH(int newW, int newH);
+        bool writeImage(const string fileName);
 
-    bool readImage(const fs::path &imageFile);
-    uint8_t* getImageData();
+        int         w;
+        int         h;
+        int         channels = 4;
+        uint8_t*    data = NULL;
+        size_t      size = 0;
+    private:
 };
