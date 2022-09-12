@@ -44,9 +44,10 @@ If the character can't be found in the current **fontset**, one of two things wi
 Currently, multiple character images are not found when searching for missing font images. This is something I hope to remedy in a future release.
 
 ### Using the tool
-The tool is a simple command line executable. You can put the tool in to the **font root** directory and just run it. Or, you can specify a path where the **font root** is located. There are only two arguments:
-- **font root path** Which is the location of the font root
-- **base file name** Which is added to the beginning of the compiled font filename.
+The tool is a simple command line executable. You can put the tool in to the **font root** directory and just run it. Or, you can specify a path where the **font root** is located. There are only three argument options:
+- **?** Help
+- **-p path** Specify the location of the font root
+- **-n prefix_name** Which is added to the beginning of the compiled font filename.
 
 If the tool is in the **font root**, you can just run
 ```
@@ -54,7 +55,7 @@ avatar-font-tool
 ```
 If you are in a different directory, or have added the tool to the OS path. You can use the first argument to specify the **font root**
 ```
-avatar-font-tool "C:\my stuff\fonts"
+avatar-font-tool -p "C:\my stuff\fonts"
 ```
 Note that directories with spaces should be wrapped in quotess. The above options will result in the generation of six Avatar font files. Three for default and three for supercoolfont. These will be named:
 - default_12.png
@@ -68,7 +69,7 @@ If you want, you can add a prefix to the filenames. To do this, you add a second
 ```
 avatar-font-tool .\ INAV
 
-avatar-font-tool "C:\my stuff\fonts" INAV
+avatar-font-tool -p "C:\my stuff\fonts" -n INAV
 ```
 The above options will result in the generation of six Avatar font files:
 - INAV_default_12.png
