@@ -39,35 +39,49 @@ int main(int argsCount, char *args[]) {
     int                 exitCode = 0;
     vector<AvatarFont>  fonts;
     bool                haveDefaultFont = false;
+    string              tmpPath = "";
     fs::path            path;
     string              fontBaseName = "";
     
     // get font directory or set the default to current
     if (argsCount > 1) {
-        string tmpPath = args[1];
-
-        if (tmpPath == "?") {
+        string arg = args[1];
+        if (arg == "?") {
             cout << "Avatar Font Tool by Mr. D (www.mrd-rc.com)" << endl
                  << "Command line usage:" << endl
                  << "no arguments - default use: font root in current directory and no filename prefix" << endl
-                 << "? - this help screen" << endl
-                 << "argument 1 - font root location" << endl
-                 << "argument 2 - filename prefix" << endl;
+                 << "-- Options --" << endl
+                 << "?  | This help screen" << endl
+                 << "-p | Path to the font root" << endl
+                 << "-n | Filename prefix" << endl;
 
             exit(exitCode);
         }
 
-        if (tmpPath[tmpPath.length() - 1] != '/') {
-            tmpPath = tmpPath + "/";
-        }
-
-        fs::current_path(tmpPath);
-
         if (argsCount > 2) {
-            fontBaseName = args[2];
+            int curArg = 1;
 
-            if (fontBaseName.length() > 0) {
-                fontBaseName+= "_";
+            while (argsCount > (curArg+1)) {
+                string option = args[curArg++];
+                string value  = args[curArg++];
+
+                if (option == "-p") {
+                    tmpPath = value;
+
+                    if (tmpPath[tmpPath.length() - 1] != '/') {
+                        tmpPath = tmpPath + "/";
+                    }
+
+                    fs::current_path(tmpPath);
+                }
+
+                if (option == "-n") {
+                    fontBaseName = value;
+
+                    if (fontBaseName.length() > 0) {
+                        fontBaseName+= "_";
+                    }
+                }
             }
         }
     }
