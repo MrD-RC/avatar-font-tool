@@ -30,7 +30,7 @@ class AvatarFont {
     public:
         AvatarFont();
         ~AvatarFont();
-        AvatarFont(fs::path);
+        AvatarFont(fs::path, bool);
         string                  showDirectory();
         int                     getMaxCharacters();
         bool                    isFontDefaultFont();
@@ -42,6 +42,7 @@ class AvatarFont {
         ImageMap                characters12X18;
         ImageMap                characters24X36;
         ImageMap                characters36X54;
+        bool                    verbose         = false;
         bool                    isObjNull       = true;
         bool                    isDefaultFont   = false;
         int                     maxCharacters   = 256;
