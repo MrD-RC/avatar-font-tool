@@ -42,44 +42,54 @@ int main(int argsCount, char *args[]) {
     string              tmpPath = "";
     fs::path            path;
     string              fontBaseName = "";
+    const char          newl = '\n';
+    bool                verbose = false;
     
     // get font directory or set the default to current
     if (argsCount > 1) {
         string arg = args[1];
         if (arg == "?") {
-            cout << "Avatar Font Tool by Mr. D (www.mrd-rc.com)" << endl
-                 << "Command line usage:" << endl
-                 << "no arguments - default use: font root in current directory and no filename prefix" << endl
-                 << "-- Options --" << endl
-                 << "?  | This help screen" << endl
-                 << "-p | Path to the font root" << endl
-                 << "-n | Filename prefix" << endl;
+            cout << "Avatar Font Tool by Mr. D (www.mrd-rc.com)" << newl
+                 << "Command line usage:" << newl
+                 << "no arguments - default use: font root in current directory and no filename prefix" << newl
+                 << "-- Options --" << newl
+                 << "?     | This help screen" << newl
+                 << "-p %p | Path to the font root" << newl
+                 << "-n %n | Filename prefix" << newl
+                 << "-v    | Verbose mode (show more detailed messages)" << endl;
 
             exit(exitCode);
+        } else if (arg == "-v") {
+            verbose = true;
         }
 
         if (argsCount > 2) {
             int curArg = 1;
 
-            while (argsCount > (curArg+1)) {
+            while (argsCount > curArg) {
                 string option = args[curArg++];
-                string value  = args[curArg++];
 
-                if (option == "-p") {
-                    tmpPath = value;
+                if (option == "-v") {
+                    verbose = true;
+                } else if (argsCount > curArg) {
+                    if (option == "-p") {
+                        string value  = args[curArg++];
+                        tmpPath = value;
 
-                    if (tmpPath[tmpPath.length() - 1] != '/') {
-                        tmpPath = tmpPath + "/";
+                        if (tmpPath[tmpPath.length() - 1] != '/') {
+                            tmpPath = tmpPath + "/";
+                        }
+
+                        fs::current_path(tmpPath);
                     }
 
-                    fs::current_path(tmpPath);
-                }
+                    if (option == "-n") {
+                        string value  = args[curArg++];
+                        fontBaseName = value;
 
-                if (option == "-n") {
-                    fontBaseName = value;
-
-                    if (fontBaseName.length() > 0) {
-                        fontBaseName+= "_";
+                        if (fontBaseName.length() > 0) {
+                            fontBaseName+= "_";
+                        }
                     }
                 }
             }
@@ -90,6 +100,11 @@ int main(int argsCount, char *args[]) {
 
     fs::file_status s = fs::file_status{};
     const fs::path& p = path;
+
+    if (verbose) {
+        cout << "Staring program for font " << fontBaseName << " in directory " << quoted(path.string()) << endl;
+    }
+
     if (fs::status_known(s) ? fs::exists(s) : fs::exists(p)) {
         // The base fonts directory exists.
  
@@ -105,7 +120,7 @@ int main(int argsCount, char *args[]) {
         // First loop through the subdirectories and create the AvatarFont objects
         for (auto &dirPath : fontDirectories) {
             // Create objects for fonts
-            AvatarFont af(dirPath);
+            AvatarFont af(dirPath, verbose);
             
             if (af.isFontDefaultFont()) {
                 // Add default font object to start of vector
@@ -127,7 +142,9 @@ int main(int argsCount, char *args[]) {
 
         // Now that we have all our font objects, we should proceed to process. The default font first, then the rest. Missing characters can be filled from default.
         for (auto &fontSet : fonts) {
-            cout << "Have font: " << fontSet.showDirectory() << ". Is it the default font? " << ((fontSet.isFontDefaultFont()) ? "Yes" : "No") << endl;
+            if (verbose) {
+                cout << "Have font: " << fontSet.showDirectory() << ". Is it the default font? " << ((fontSet.isFontDefaultFont()) ? "Yes" : "No") << endl;
+            }
 
             // Generate the image data from the PNG character files.
             if (fontSet.isFontDefaultFont()) {

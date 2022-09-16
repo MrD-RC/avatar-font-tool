@@ -36,7 +36,8 @@ AvatarFont::AvatarFont() {
 AvatarFont::~AvatarFont() {
 }
 
-AvatarFont::AvatarFont(fs::path fp) {
+AvatarFont::AvatarFont(fs::path fp, bool isVerbose = false) {
+    verbose = isVerbose;
     bool dirExists = false;
     isObjNull = false;
     fs::file_status s;
@@ -103,11 +104,13 @@ void AvatarFont::seedMaps() {
  * @return false if there was a problem
  */
 bool AvatarFont::generateCharacters(AvatarFont& defaultFont) {
-    cout << "Generating characters for font " << showDirectory() << ". Default Font is ";
-    if (defaultFont.isNull()) {
-        cout << "NULL" << endl;
-    } else {
-        cout << defaultFont.showDirectory() << endl;
+    if (verbose) {
+        cout << "Generating characters for font " << showDirectory() << ". Default Font is " << flush;
+        if (defaultFont.isNull()) {
+            cout << "NULL" << endl;
+        } else {
+            cout << defaultFont.showDirectory() << endl;
+        }
     }
 
     seedMaps();
@@ -193,7 +196,9 @@ void AvatarFont::capturePNGCharacters(AvatarFont& defaultFont, ImageMap& charact
     int characterIndex = 1;
     int lastCharacter = calculateLastCharacter(defaultFont);
 
-    cout << "Capturing characters for " << quoted(charactersPath.string());
+    if (verbose) {
+        cout << "Capturing characters for " << quoted(charactersPath.string()) << flush;
+    }
 
     for (const auto &file : fs::directory_iterator{charactersPath}) {
         string extension = file.path().extension().string();
@@ -357,7 +362,9 @@ void AvatarFont::capturePNGCharacters(AvatarFont& defaultFont, ImageMap& charact
         }
     }
 
-    cout << " with a total of " << lastCharacter << " characters. " << endl;
+    if (verbose) {
+        cout << " with a total of " << lastCharacter << " characters. " << endl;
+    }
 
     if (characterIndex < (lastCharacter + 1)) {
         characterIndex = findMissingCharacters(defaultFont, characterMap, characterIndex, (lastCharacter + 1), alt1, alt2, thisWidth, thisHeight, alt1Width, alt1Height, alt2Width, alt2Height);
