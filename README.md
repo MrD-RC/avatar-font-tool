@@ -46,7 +46,8 @@ Currently, multiple character images are not found when searching for missing fo
 ### Using the tool
 The tool is a simple command line executable. You can put the tool in to the **font root** directory and just run it. Or, you can specify a path where the **font root** is located. There are only three argument options:
 - **?** Help
-- **-p path** Specify the location of the font root
+- **-v** Use verbose mode. This will output more detailed messages during the program execution.
+- **-p path** Specify the location of the font root.
 - **-n prefix_name** Which is added to the beginning of the compiled font filename.
 
 If the tool is in the **font root**, you can just run
