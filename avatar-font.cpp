@@ -78,20 +78,26 @@ AvatarFont::AvatarFont(fs::path fp, bool isVerbose = false) {
 }
 
 void AvatarFont::seedMaps() {
-    for (int i = 1; i <= 512; i++) {
+    // Generate remaining empty characters
+    for (int i = 0; i <= 512; i++) {
         ImageCharacter newIC = ImageCharacter();
         characters12X18[i] = newIC;
     }
 
-    for (int i = 1; i <= 512; i++) {
+    for (int i = 0; i <= 512; i++) {
         ImageCharacter newIC = ImageCharacter();
         characters24X36[i] = newIC;
     }
 
-    for (int i = 1; i <= 512; i++) {
+    for (int i = 0; i <= 512; i++) {
         ImageCharacter newIC = ImageCharacter();
         characters36X54[i] = newIC;
     }
+
+    // Set character 0 to blank
+    characters12X18[0].setWH(12, 18);
+    characters24X36[0].setWH(24, 36);
+    characters36X54[0].setWH(36, 54);
 }
 
 /**
@@ -153,7 +159,8 @@ bool AvatarFont::generatePNGFile(fs::path &path, ImageMap& characters, uint8_t c
 
     // Transfer all the individual images to the Avatar image
     for (auto const&[key, character] : characters) {
-        if (key <= maxCharacters) {
+        if (key < maxCharacters) {
+            if (verbose) { cout << "Exporting character " << to_string(key) << " of " << to_string(maxCharacters) << " for font size " << to_string(charWidth) << "x" << to_string(charHeight) << endl; }
             memcpy(&avatarOutput.data[avImgPtr], character.data, character.size);
             avImgPtr+= character.size;
         }
