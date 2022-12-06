@@ -173,10 +173,12 @@ bool AvatarFont::generatePNGFile(fs::path &path, ImageMap& characters, uint8_t c
             charStart = 0;
 
             if ((charCols > 1) && ((key % charRows) == 0)) {
+                curCol++;
                 avImgPtr = (charWidth * curCol) * 4;
             }
 
             for (charInd = 0; charInd < charHeight; charInd++) {
+                memcpy(&avatarOutput.data[avImgPtr], character.data + charStart, (charWidth * 4));
                 charStart+= (charWidth * 4);
                 avImgPtr+= (charWidth * 4) * charCols;
             }
