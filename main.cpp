@@ -44,6 +44,7 @@ int main(int argsCount, char *args[]) {
     string              fontBaseName = "";
     const char          newl = '\n';
     bool                verbose = false;
+    bool                renderColsx256FontImage = false;
     
     // get font directory or set the default to current
     if (argsCount > 1) {
@@ -53,10 +54,11 @@ int main(int argsCount, char *args[]) {
                  << "Command line usage:" << newl
                  << "no arguments - default use: font root in current directory and no filename prefix" << newl
                  << "-- Options --" << newl
-                 << "?     | This help screen" << newl
-                 << "-p %p | Path to the font root" << newl
-                 << "-n %n | Filename prefix" << newl
-                 << "-v    | Verbose mode (show more detailed messages)" << endl;
+                 << "?      | This help screen" << newl
+                 << "-p %p  | Path to the font root" << newl
+                 << "-n %n  | Filename prefix" << newl
+                 << "-xcols | Output a multi-column x 256 high character font image" << newl
+                 << "-v     | Verbose mode (show more detailed messages)" << endl;
 
             exit(exitCode);
         } else if (arg == "-v") {
@@ -71,6 +73,8 @@ int main(int argsCount, char *args[]) {
 
                 if (option == "-v") {
                     verbose = true;
+                } else if (option == "-xcols") {
+                    renderColsx256FontImage = true;
                 } else if (argsCount > curArg) {
                     if (option == "-p") {
                         string value  = args[curArg++];
@@ -157,7 +161,7 @@ int main(int argsCount, char *args[]) {
             // Output the font files. The file name format is fontBaseName_font folder_font width. 
             // For example with arg fontBaseName set to INAV. INAV_default_24.png
             // ... or with no fontBaseName set. default_24.png
-            fontSet.generateAvatarPNGFiles(path, fontBaseName);
+            fontSet.generateAvatarPNGFiles(path, fontBaseName, renderColsx256FontImage);
 
             cout << "Font generation successful." << endl;
         }

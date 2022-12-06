@@ -36,7 +36,7 @@ class AvatarFont {
         bool                    isFontDefaultFont();
         bool                    isNull() {return isObjNull;}
         bool                    generateCharacters(AvatarFont& defaultFont);
-        bool                    generateAvatarPNGFiles(fs::path exportPath, string fontBaseName);
+        bool                    generateAvatarPNGFiles(fs::path exportPath, string fontBaseName, bool renderColsx256FontImage);
         ImageMap                &getFontMap(string fontSize);
     private:
         ImageMap                characters12X18;
@@ -54,6 +54,6 @@ class AvatarFont {
         int                     calculateLastCharacter(AvatarFont& defaultFont);
         void                    capturePNGCharacters(AvatarFont& defaultFont, map<int, ImageCharacter>& characterMap, fs::path charactersPath, fs::path alt1, fs::path alt2, uint8_t thisWidth, uint8_t thisHeight, uint8_t alt1Width, uint8_t alt1Height, uint8_t alt2Width, uint8_t alt2Height);
         int                     findMissingCharacters(AvatarFont& defaultFont, map<int, ImageCharacter>& characterMap, int characterIndex, int workingCharacter, fs::path alt1, fs::path alt2, uint8_t thisWidth, uint8_t thisHeight, uint8_t alt1Width, uint8_t alt1Height, uint8_t alt2Width, uint8_t alt2Height);
-        bool                    generatePNGFile(fs::path &path, map<int, ImageCharacter>& characterMap, uint8_t charWidth, uint8_t charHeight, string &fontBaseName);
+        bool                    generatePNGFile(fs::path &path, map<int, ImageCharacter>& characterMap, uint8_t charWidth, uint8_t charHeight, string &fontBaseName, bool renderColsx256FontImage);
         void                    seedMaps();
 };
