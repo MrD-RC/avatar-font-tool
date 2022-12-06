@@ -131,20 +131,20 @@ bool AvatarFont::generateCharacters(AvatarFont& defaultFont) {
     return true;
 }
 
-bool AvatarFont::generateAvatarPNGFiles(fs::path exportPath, string fontBaseName) {
+bool AvatarFont::generateAvatarPNGFiles(fs::path exportPath, string fontBaseName, bool renderColsx256FontImage) {
     bool aOK = true;
 
-    if (aOK && !generatePNGFile(exportPath, characters12X18, 12, 18, fontBaseName)) {
+    if (aOK && !generatePNGFile(exportPath, characters12X18, 12, 18, fontBaseName, renderColsx256FontImage)) {
         cout << "There was an issue generating the 12x18 " << showDirectory() << " file." << endl;
         aOK = false;
     }
 
-    if (aOK && !generatePNGFile(exportPath, characters24X36, 24, 36, fontBaseName)) {
+    if (aOK && !generatePNGFile(exportPath, characters24X36, 24, 36, fontBaseName, renderColsx256FontImage)) {
         cout << "There was an issue generating the 24x36 " << showDirectory() << " file." << endl;
         aOK = false;
     }
 
-    if (aOK && !generatePNGFile(exportPath, characters36X54, 36, 54, fontBaseName)) {
+    if (aOK && !generatePNGFile(exportPath, characters36X54, 36, 54, fontBaseName, renderColsx256FontImage)) {
         cout << "There was an issue generating the 36x54 " << showDirectory() << " file." << endl;
         aOK = false;
     }
@@ -152,17 +152,42 @@ bool AvatarFont::generateAvatarPNGFiles(fs::path exportPath, string fontBaseName
     return aOK;
 }
 
-bool AvatarFont::generatePNGFile(fs::path &path, ImageMap& characters, uint8_t charWidth, uint8_t charHeight, string &fontBaseName) {
+bool AvatarFont::generatePNGFile(fs::path &path, ImageMap& characters, uint8_t charWidth, uint8_t charHeight, string &fontBaseName, bool renderColsx256FontImage) {
     // create the object for the Avatar image
-    ImageCharacter avatarOutput = ImageCharacter(charWidth, (charHeight * maxCharacters));
-    uint32_t avImgPtr = 0;
+    uint8_t charCols = 1;
+    uint16_t charRows = 512;
 
+    if (renderColsx256FontImage) {
+        charCols = (int) maxCharacters / 256;
+        charRows = (int) maxCharacters / charCols;
+    }
+
+    if (verbose) {
+        cout << "Generating font with " << to_string(charCols) << " columns and " << to_string(charRows) << " rows." << endl;
+    }
+
+    ImageCharacter avatarOutput = ImageCharacter((charWidth * charCols), (charHeight * charRows));   
+    
     // Transfer all the individual images to the Avatar image
+    uint32_t avImgPtr = 0;
+    uint8_t  curCol = 0;
+    uint32_t charStart = 0;
+    uint8_t  charInd = 0;
+
     for (auto const&[key, character] : characters) {
-        if (key < maxCharacters) {
-            if (verbose) { cout << "Exporting character " << to_string(key) << " of " << to_string(maxCharacters) << " for font size " << to_string(charWidth) << "x" << to_string(charHeight) << endl; }
-            memcpy(&avatarOutput.data[avImgPtr], character.data, character.size);
-            avImgPtr+= character.size;
+        if (key <= maxCharacters) {
+            charStart = 0;
+
+            if ((charCols > 1) && ((key % charRows) == 0)) {
+                curCol++;
+                avImgPtr = (charWidth * curCol) * 4;
+            }
+
+            for (charInd = 0; charInd < charHeight; charInd++) {
+                memcpy(&avatarOutput.data[avImgPtr], character.data + charStart, (charWidth * 4));
+                charStart+= (charWidth * 4);
+                avImgPtr+= (charWidth * 4) * charCols;
+            }
         }
     }
 
