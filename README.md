@@ -7,6 +7,11 @@ This work was initially done as part of preparing the [INAV](https://github.com/
 ## The Tool
 The Avatar Font Tool will take the individual character images and convert them in to the image used by Avatar. It will also convert alternate fonts found in the same main directory that the program is run from or pointed to. An optional name can also be given for the output files. This is all done without the need for configuration files. However, there are a couple of caveats for using the tool.
 
+### The Avatar font image file
+The Avatar firmware uses a PNG file for it's fonts. It does use alpha transparency, so you can create some really cool symbols. The current Avatar firmware uses a font file which is one character wide by 256 characters x the number of pages high. At this point in time, INAV uses 2 pages (so 512 characters high). Whereas, BetaFlight and ArduPilot use 1 page (256 characters high). BetaFlight will start using 4 pages in version 4.4. This would have meant a 1024 character high image. Not only would this be unwieldy. It also may be to tall to open in some image editing tools. So, the format of the Avatar font file will change to multiple columns of 256 characters. ArduPilot would not change. That would still be 1 character by 256 characters. BetaFlight will be 4 characters by 256 characters. Finally, INAV will be 2 characters by 256 characters.
+
+This tool has been updated in preparation for this change. Currently, it will create the one character by 256 (BF/Ardu) or 512 (INAV) characters high font. To generate the multiple column font. Use the `-xcols` argument in the command line.
+
 ### The image files
 Image files must be stored as PNG files with transparency. The Avatar system uses the transparent pixels, rather than having a mid grey background which is removed. This means that alpha transparency and full colour can be used in your fonts. There are three sizes of fonts:
 - **12 x 18 pixels** This is the small font, the same size as analogue
@@ -47,6 +52,7 @@ Currently, multiple character images are not found when searching for missing fo
 The tool is a simple command line executable. You can put the tool in to the **font root** directory and just run it. Or, you can specify a path where the **font root** is located. There are only three argument options:
 - **?** Help
 - **-v** Use verbose mode. This will output more detailed messages during the program execution.
+- **-xcols** Generate a multi-column font file.
 - **-p path** Specify the location of the font root.
 - **-n prefix_name** Which is added to the beginning of the compiled font filename.
 
