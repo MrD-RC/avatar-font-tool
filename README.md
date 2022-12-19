@@ -1,11 +1,11 @@
-# Avatar Font Tool
-A tool for compiling fonts for the Avatar (Walksnail/Caddx) HD system.
+# HD OSD Font Tool
+A tool for compiling fonts for HD OSD systems. The Avatar (Walksnail/Caddx) HD system is currently supported.
 
 ## Introduction
 This work was initially done as part of preparing the [INAV](https://github.com/iNavFlight) font for the Avatar HD system. In INAV, the characters each have their own image file. This makes editing and customising the fonts much simpler. My plan was to take the same approach with the Avatar font; and have a tool to compile the image used in their firmware. Inspiration coming from the [max67456tool](https://github.com/fiam/max7456tool) by fiam.
 
 ## The Tool
-The Avatar Font Tool will take the individual character images and convert them in to the image used by Avatar. It will also convert alternate fonts found in the same main directory that the program is run from or pointed to. An optional name can also be given for the output files. This is all done without the need for configuration files. However, there are a couple of caveats for using the tool.
+The HD OSD Font Tool will take the individual character images and convert them in to the image used by Avatar. It will also convert alternate fonts found in the same main directory that the program is run from or pointed to. An optional name can also be given for the output files. This is all done without the need for configuration files. However, there are a couple of caveats for using the tool.
 
 ### The Avatar font image file
 The Avatar firmware uses a PNG file for it's fonts. It does use alpha transparency, so you can create some really cool symbols. The current Avatar firmware uses a font file which is one character wide by 256 characters x the number of pages high. At this point in time, INAV uses 2 pages (so 512 characters high). Whereas, BetaFlight and ArduPilot use 1 page (256 characters high). BetaFlight will start using 4 pages in version 4.4. This would have meant a 1024 character high image. Not only would this be unwieldy. It also may be to tall to open in some image editing tools. So, the format of the Avatar font file will change to multiple columns of 256 characters. ArduPilot would not change. That would still be 1 character by 256 characters. BetaFlight will be 4 characters by 256 characters. Finally, INAV will be 2 characters by 256 characters.
