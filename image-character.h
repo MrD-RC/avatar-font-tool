@@ -32,9 +32,11 @@ class ImageCharacter {
 
         void copyImage(const ImageCharacter &fromCharacter);
         bool readImage(const string imageFile);
+        void fillImage(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
         void resizeImage(const string imageFile, int newW, int newH);
         void setWH(int newW, int newH);
-        bool writeImage(const string fileName);
+        bool writeAvatarImage(const string fileName);
+        bool writeHDZeroImage(const string fileName);
 
         int         w;
         int         h;

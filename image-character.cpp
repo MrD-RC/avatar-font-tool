@@ -1,19 +1,19 @@
 /**
- * This file is part of Avatar Font Tool.
+ * This file is part of HD OSD Font Tool.
  * Written by Darren Lines (Mr. D RC)
  *
- * Avatar Font Tool is free software: you can redistribute it and/or modify
+ * HD OSD Font Tool is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. Please keep this header in the files.
  *
- * Avatar Font Tool is distributed in the hope that it will be useful,
+ * HD OSD Font Tool is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Avatar Font Tool.  If not, see <http://www.gnu.org/licenses/>.
+ * along with HD OSD Font Tool.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -76,6 +76,14 @@ bool ImageCharacter::readImage(const string imageFile) {
     return data != NULL;
 }
 
+void ImageCharacter::fillImage(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    for (int i = 0; i < (w * h * channels); i++) {
+        data[i++] = r;
+        data[i++] = g;
+        data[i++] = b;
+        data[i] = a;
+    }
+}
 
 void ImageCharacter::resizeImage(const string imageFile, int newW, int newH) {
     if (!readImage(imageFile)) {
@@ -107,7 +115,7 @@ void ImageCharacter::setWH(int newW, int newH) {
     }
 }
 
-bool ImageCharacter::writeImage(const string fileName) {
+bool ImageCharacter::writeAvatarImage(const string fileName) {
     stbi_write_png_compression_level = 10;
 
     char filename[fileName.length() + 1];
@@ -115,5 +123,14 @@ bool ImageCharacter::writeImage(const string fileName) {
 
     int success = stbi_write_png(filename, w, h, channels, data, (w * channels));
     
-    return success != 0;
+    return (success != 0);
+}
+
+bool ImageCharacter::writeHDZeroImage(const string fileName) {
+    char filename[fileName.length() + 1];
+    strcpy(filename, fileName.c_str());
+
+    int success = stbi_write_bmp(filename, w, h, channels, data);
+
+    return (success != 0);
 }

@@ -8,7 +8,7 @@ CXXFLAGS = -std=c++20 -Wall
 LDFLAGS = 
 
 # Makefile settings - Can be customized.
-APPNAME = avatar-font-tool
+APPNAME = hdosd-font-tool
 EXT = .cpp
 SRCDIR = $(CURDIR)
 OBJDIR = obj

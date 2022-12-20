@@ -1,24 +1,25 @@
 /**
- * This file is part of Avatar Font Tool.
+ * This file is part of HD OSD Font Tool.
  * Written by Darren Lines (Mr. D RC)
  *
- * Avatar Font Tool is free software: you can redistribute it and/or modify
+ * HD OSD Font Tool is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version. Please keep this header in the files.
  *
- * Avatar Font Tool is distributed in the hope that it will be useful,
+ * HD OSD Font Tool is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Avatar Font Tool.  If not, see <http://www.gnu.org/licenses/>.
+ * along with HD OSD Font Tool.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "avatar-font.h"
+#include "hdosd-font.h"
 #include "image-character.h"
 #include <algorithm>
+#include <cmath>
 #include <filesystem>
 #include <iostream>
 #include <map>
@@ -29,14 +30,14 @@ namespace fs = std::filesystem;
 
 fs::path fontPath;
 
-AvatarFont::AvatarFont() {
+HDOSDFont::HDOSDFont() {
     // Blank constructor for null object.
 }
 
-AvatarFont::~AvatarFont() {
+HDOSDFont::~HDOSDFont() {
 }
 
-AvatarFont::AvatarFont(fs::path fp, bool isVerbose = false) {
+HDOSDFont::HDOSDFont(fs::path fp, bool isVerbose = false) {
     verbose = isVerbose;
     bool dirExists = false;
     isObjNull = false;
@@ -77,7 +78,7 @@ AvatarFont::AvatarFont(fs::path fp, bool isVerbose = false) {
     }
 }
 
-void AvatarFont::seedMaps() {
+void HDOSDFont::seedMaps() {
     // Generate remaining empty characters
     for (int i = 0; i <= 512; i++) {
         ImageCharacter newIC = ImageCharacter();
@@ -109,7 +110,7 @@ void AvatarFont::seedMaps() {
  * @return true if character retrieval successful
  * @return false if there was a problem
  */
-bool AvatarFont::generateCharacters(AvatarFont& defaultFont) {
+bool HDOSDFont::generateCharacters(HDOSDFont& defaultFont) {
     if (verbose) {
         cout << "Generating characters for font " << showDirectory() << ". Default Font is " << flush;
         if (defaultFont.isNull()) {
@@ -131,31 +132,38 @@ bool AvatarFont::generateCharacters(AvatarFont& defaultFont) {
     return true;
 }
 
-bool AvatarFont::generateAvatarPNGFiles(fs::path exportPath, string fontBaseName, bool renderColsx256FontImage) {
+bool HDOSDFont::generateFontImageFiles(fs::path exportPath, string fontBaseName, uint8_t exportFontSystem, bool renderColsx256FontImage) {
     bool aOK = true;
 
-    if (aOK && !generatePNGFile(exportPath, characters12X18, 12, 18, fontBaseName, renderColsx256FontImage)) {
-        cout << "There was an issue generating the 12x18 " << showDirectory() << " file." << endl;
-        aOK = false;
-    }
+    if (exportFontSystem == OUTPUT_FONT_AVATAR) {
+        if (aOK && !generateAvatarPNGFile(exportPath, characters12X18, 12, 18, fontBaseName, renderColsx256FontImage)) {
+            cout << "There was an issue generating the Avatar 12x18 " << showDirectory() << " file." << endl;
+            aOK = false;
+        }
 
-    if (aOK && !generatePNGFile(exportPath, characters24X36, 24, 36, fontBaseName, renderColsx256FontImage)) {
-        cout << "There was an issue generating the 24x36 " << showDirectory() << " file." << endl;
-        aOK = false;
-    }
+        if (aOK && !generateAvatarPNGFile(exportPath, characters24X36, 24, 36, fontBaseName, renderColsx256FontImage)) {
+            cout << "There was an issue generating the Avatar 24x36 " << showDirectory() << " file." << endl;
+            aOK = false;
+        }
 
-    if (aOK && !generatePNGFile(exportPath, characters36X54, 36, 54, fontBaseName, renderColsx256FontImage)) {
-        cout << "There was an issue generating the 36x54 " << showDirectory() << " file." << endl;
-        aOK = false;
+        if (aOK && !generateAvatarPNGFile(exportPath, characters36X54, 36, 54, fontBaseName, renderColsx256FontImage)) {
+            cout << "There was an issue generating the Avatar 36x54 " << showDirectory() << " file." << endl;
+            aOK = false;
+        }
+    } else if (exportFontSystem == OUTPUT_FONT_HDZERO) {
+        if (aOK && !generateHDZeroBMPFile(exportPath, characters24X36, 24, 36, fontBaseName, renderColsx256FontImage)) {
+            cout << "There was an issue generating the HDZero 24x36 " << showDirectory() << " file." << endl;
+            aOK = false;
+        }
     }
 
     return aOK;
 }
 
-bool AvatarFont::generatePNGFile(fs::path &path, ImageMap& characters, uint8_t charWidth, uint8_t charHeight, string &fontBaseName, bool renderColsx256FontImage) {
-    // create the object for the Avatar image
+bool HDOSDFont::generateAvatarPNGFile(fs::path &path, ImageMap& characters, uint8_t charWidth, uint8_t charHeight, string &fontBaseName, bool renderColsx256FontImage) {
+    // create the object for the Avatar OSD image
     uint8_t charCols = 1;
-    uint16_t charRows = 512;
+    uint16_t charRows = maxCharacters;
 
     if (renderColsx256FontImage) {
         charCols = (int) maxCharacters / 256;
@@ -163,53 +171,115 @@ bool AvatarFont::generatePNGFile(fs::path &path, ImageMap& characters, uint8_t c
     }
 
     if (verbose) {
-        cout << "Generating font with " << to_string(charCols) << " columns and " << to_string(charRows) << " rows." << endl;
+        cout << "Generating a " << to_string(charWidth) << "x" << to_string(charHeight) << " Avatar font with " << to_string(charCols) << " columns and " << to_string(charRows) << " rows." << endl;
     }
 
     ImageCharacter avatarOutput = ImageCharacter((charWidth * charCols), (charHeight * charRows));   
     
     // Transfer all the individual images to the Avatar image
-    uint32_t avImgPtr = 0;
+    uint32_t outImgPtr = 0;
     uint8_t  curCol = 0;
     uint32_t charStart = 0;
     uint8_t  charInd = 0;
 
     for (auto const&[key, character] : characters) {
-        if (key <= maxCharacters) {
+        if (key < maxCharacters) {
             charStart = 0;
 
-            if ((charCols > 1) && ((key % charRows) == 0)) {
+            if ((outImgPtr > 0) && (charCols > 1) && ((key % charRows) == 0)) {
                 curCol++;
-                avImgPtr = (charWidth * curCol) * 4;
+                outImgPtr = (charWidth * curCol) * 4;
             }
 
             for (charInd = 0; charInd < charHeight; charInd++) {
-                memcpy(&avatarOutput.data[avImgPtr], character.data + charStart, (charWidth * 4));
+                memcpy(&avatarOutput.data[outImgPtr], character.data + charStart, (charWidth * 4));
                 charStart+= (charWidth * 4);
-                avImgPtr+= (charWidth * 4) * charCols;
+                outImgPtr+= (charWidth * 4) * charCols;
             }
         }
     }
 
     // Save the file
-    avatarOutput.writeImage(path.string() + path.root_directory().string() + fontBaseName + showDirectory() + "_" + to_string(charWidth) + ".png");
-
-    return true;
+    return avatarOutput.writeAvatarImage(path.string() + path.root_directory().string() + fontBaseName + showDirectory() + "_" + to_string(charWidth) + ".png");
 }
 
-bool AvatarFont::isFontDefaultFont() {
+bool HDOSDFont::generateHDZeroBMPFile(fs::path &path, ImageMap& characters, uint8_t charWidth, uint8_t charHeight, string &fontBaseName, bool renderColsx256FontImage) {
+    // create the object for the HS OSD image
+    bool    verticalFontSet = false;
+    uint8_t charCols = 16;
+    uint16_t charRows = maxCharacters / 16;
+
+    if (renderColsx256FontImage) {
+        charCols = (int) maxCharacters / 256;
+        charRows = (int) maxCharacters / charCols;
+        verticalFontSet = true;
+    }
+
+    if (verbose) {
+        cout << "Generating a " << to_string(charWidth) << "x" << to_string(charHeight) << " HDZero font with " << to_string(charCols) << " columns and " << to_string(charRows) << " rows." << endl;
+    }
+
+    ImageCharacter hdzeroOutput = ImageCharacter((charWidth * charCols), (charHeight * charRows));
+    hdzeroOutput.fillImage(127, 127, 127, 255);
+    
+    // Transfer all the individual images to the Avatar image
+    uint32_t outImgPtr = 0;
+    uint8_t  curCol = 0;
+    uint8_t  curRow = 0;
+    uint32_t charStart = 0;
+    uint8_t  charInd = 0;
+
+    for (auto const&[key, character] : characters) {
+        if (key < maxCharacters) {
+            charStart = 0;
+
+            if (verticalFontSet) {
+                if (outImgPtr > 0 && (key % charRows) == 0) {
+                    curCol++;
+                    outImgPtr = (charWidth * curCol) * 4;
+                }
+            } else {
+                if (outImgPtr > 0) {
+                    curCol++;
+                }
+
+                if (curCol == charCols) {
+                    curRow++;
+                    curCol = 0;
+                }
+
+                outImgPtr = ((charWidth * 4) * curCol) + (((charWidth * 4) * charCols) * (charHeight * curRow));
+            }
+
+            for (charInd = 0; charInd < charHeight; charInd++) {
+                for (uint8_t pixel = 0; pixel < charWidth; pixel++) {
+                    if ((character.data[(charStart + (pixel * 4) + 3)] > 10)) {
+                        memcpy(&hdzeroOutput.data[outImgPtr+(pixel * 4)], character.data + (charStart + (pixel*4)), 4);
+                    }
+                }
+                charStart+= (charWidth * 4);
+                outImgPtr+= (charWidth * 4) * charCols;
+            }
+        }
+    }
+
+    // Save the file
+    return hdzeroOutput.writeHDZeroImage(path.string() + path.root_directory().string() + fontBaseName + showDirectory() + "_" + to_string(charWidth) + ".bmp");
+}
+
+bool HDOSDFont::isFontDefaultFont() {
     return isDefaultFont;
 }
 
-string AvatarFont::showDirectory() {
+string HDOSDFont::showDirectory() {
     return fontPath.filename().string();
 }
 
-int AvatarFont::getMaxCharacters() {
+int HDOSDFont::getMaxCharacters() {
     return maxCharacters;
 }
 
-ImageMap &AvatarFont::getFontMap(string fontSize) {
+ImageMap &HDOSDFont::getFontMap(string fontSize) {
     if (fontSize == "36x54") {
         return characters36X54;
     } else if (fontSize == "24x36") {
@@ -220,13 +290,14 @@ ImageMap &AvatarFont::getFontMap(string fontSize) {
     return characters12X18;
 }
 
-int AvatarFont::calculateLastCharacter(AvatarFont& defaultFont) {
+int HDOSDFont::calculateLastCharacter(HDOSDFont& defaultFont) {
     return (isDefaultFont) ? maxCharacters : defaultFont.getMaxCharacters();
 }
 
-void AvatarFont::capturePNGCharacters(AvatarFont& defaultFont, ImageMap& characterMap, fs::path charactersPath, fs::path alt1, fs::path alt2, uint8_t thisWidth, uint8_t thisHeight, uint8_t alt1Width, uint8_t alt1Height, uint8_t alt2Width, uint8_t alt2Height) {
-    int characterIndex = 1;
+void HDOSDFont::capturePNGCharacters(HDOSDFont& defaultFont, ImageMap& characterMap, fs::path charactersPath, fs::path alt1, fs::path alt2, uint8_t thisWidth, uint8_t thisHeight, uint8_t alt1Width, uint8_t alt1Height, uint8_t alt2Width, uint8_t alt2Height) {
+    int characterIndex = 0;
     int lastCharacter = calculateLastCharacter(defaultFont);
+    int capturedCharacters = 0;
 
     if (verbose) {
         cout << "Capturing characters for " << quoted(charactersPath.string()) << flush;
@@ -304,10 +375,11 @@ void AvatarFont::capturePNGCharacters(AvatarFont& defaultFont, ImageMap& charact
                     }
                 }
 
-                if (workingCharacter > 255 && maxCharacters < 512) {
-                    maxCharacters = 512;
-                    lastCharacter = calculateLastCharacter(defaultFont);
-                }
+                // Update max and last characters
+                maxCharacters = (floor((float)workingCharacter / 256) + 1) * 256;
+                lastCharacter = calculateLastCharacter(defaultFont);
+
+                capturedCharacters++;
             } else if (filename.find('_') != string::npos) {
                 // This is multiple characters in one PNG
                 // The characters must be sequential. The first character and last character indexes are separated by an '_'
@@ -369,10 +441,11 @@ void AvatarFont::capturePNGCharacters(AvatarFont& defaultFont, ImageMap& charact
                     characterIndex++;
                 }
 
-                if (workingCharacter > 255 && maxCharacters < 512) {
-                    maxCharacters = 512;
-                    lastCharacter = calculateLastCharacter(defaultFont);
-                }
+                // Update max and last characters
+                maxCharacters = (floor((float)workingCharacter / 256) + 1) * 256;
+                lastCharacter = calculateLastCharacter(defaultFont);
+
+                capturedCharacters++;
             } else {
                 int workingCharacter = stoi(filename);
                 
@@ -386,16 +459,19 @@ void AvatarFont::capturePNGCharacters(AvatarFont& defaultFont, ImageMap& charact
 
                 characterIndex++;
 
-                if (workingCharacter > 255 && maxCharacters < 512) {
-                    maxCharacters = 512;
-                    lastCharacter = calculateLastCharacter(defaultFont);
-                }
+                // Update max and last characters
+                maxCharacters = (floor((float)workingCharacter / 256) + 1) * 256;
+                lastCharacter = calculateLastCharacter(defaultFont);
+
+                capturedCharacters++;
             }
         }
     }
 
+    maxCharacters = lastCharacter;
+
     if (verbose) {
-        cout << " with a total of " << lastCharacter << " characters. " << endl;
+        cout << " with a total of " << lastCharacter << " characters. " << to_string(capturedCharacters) << " characters loaded from directory." << endl;
     }
 
     if (characterIndex < (lastCharacter + 1)) {
@@ -405,7 +481,7 @@ void AvatarFont::capturePNGCharacters(AvatarFont& defaultFont, ImageMap& charact
     return;
 }
 
-int AvatarFont::findMissingCharacters(AvatarFont& defaultFont, ImageMap& characterMap, int characterIndex, int workingCharacter, fs::path alt1, fs::path alt2, uint8_t thisWidth, uint8_t thisHeight, uint8_t alt1Width, uint8_t alt1Height, uint8_t alt2Width, uint8_t alt2Height) {
+int HDOSDFont::findMissingCharacters(HDOSDFont& defaultFont, ImageMap& characterMap, int characterIndex, int workingCharacter, fs::path alt1, fs::path alt2, uint8_t thisWidth, uint8_t thisHeight, uint8_t alt1Width, uint8_t alt1Height, uint8_t alt2Width, uint8_t alt2Height) {
     // If we have missing characters, fill the gaps
 
     while (characterIndex < workingCharacter) {
