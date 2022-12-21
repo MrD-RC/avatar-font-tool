@@ -115,6 +115,23 @@ void ImageCharacter::setWH(int newW, int newH) {
     }
 }
 
+void ImageCharacter::convertRGBAtoRGB() {
+    if (channels == 4) {
+        uint8_t* noAlphaData = new uint8_t[(w * h * 3)](0);
+        int toPointer = 0;
+        
+        for (int i = 0; i < (w * h * channels); i++) {
+            if (i % 4 != 3) {
+                memcpy(&noAlphaData[toPointer++], &data[i], 1);
+            }
+        }
+
+        channels = 3;
+        size = w * h * channels;
+        data = noAlphaData;
+    }
+}
+
 bool ImageCharacter::writeAvatarImage(const string fileName) {
     stbi_write_png_compression_level = 10;
 
@@ -129,6 +146,8 @@ bool ImageCharacter::writeAvatarImage(const string fileName) {
 bool ImageCharacter::writeHDZeroImage(const string fileName) {
     char filename[fileName.length() + 1];
     strcpy(filename, fileName.c_str());
+
+    convertRGBAtoRGB();
 
     int success = stbi_write_bmp(filename, w, h, channels, data);
 

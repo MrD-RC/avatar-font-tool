@@ -35,6 +35,7 @@ class ImageCharacter {
         void fillImage(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
         void resizeImage(const string imageFile, int newW, int newH);
         void setWH(int newW, int newH);
+        void convertRGBAtoRGB();
         bool writeAvatarImage(const string fileName);
         bool writeHDZeroImage(const string fileName);
 
