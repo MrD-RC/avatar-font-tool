@@ -24,19 +24,23 @@
 using namespace std;
 namespace fs = std::filesystem;
 
+#define OUTPUT_FONT_AVATAR 0
+#define OUTPUT_FONT_HDZERO 1
+#define OUTPUT_FONT_WTFOS 2
+
 typedef map<int, ImageCharacter> ImageMap;
 
-class AvatarFont {
+class HDOSDFont {
     public:
-        AvatarFont();
-        ~AvatarFont();
-        AvatarFont(fs::path, bool);
+        HDOSDFont();
+        ~HDOSDFont();
+        HDOSDFont(fs::path, bool);
         string                  showDirectory();
         int                     getMaxCharacters();
         bool                    isFontDefaultFont();
         bool                    isNull() {return isObjNull;}
-        bool                    generateCharacters(AvatarFont& defaultFont);
-        bool                    generateAvatarPNGFiles(fs::path exportPath, string fontBaseName, bool renderColsx256FontImage);
+        bool                    generateCharacters(HDOSDFont& defaultFont);
+        bool                    generateFontImageFiles(fs::path exportPath, string fontBaseName, uint8_t exportFontSystem, bool renderColsx256FontImage);
         ImageMap                &getFontMap(string fontSize);
     private:
         ImageMap                characters12X18;
@@ -51,9 +55,10 @@ class AvatarFont {
         fs::path                fontPath24x36;
         fs::path                fontPath12x18;
 
-        int                     calculateLastCharacter(AvatarFont& defaultFont);
-        void                    capturePNGCharacters(AvatarFont& defaultFont, map<int, ImageCharacter>& characterMap, fs::path charactersPath, fs::path alt1, fs::path alt2, uint8_t thisWidth, uint8_t thisHeight, uint8_t alt1Width, uint8_t alt1Height, uint8_t alt2Width, uint8_t alt2Height);
-        int                     findMissingCharacters(AvatarFont& defaultFont, map<int, ImageCharacter>& characterMap, int characterIndex, int workingCharacter, fs::path alt1, fs::path alt2, uint8_t thisWidth, uint8_t thisHeight, uint8_t alt1Width, uint8_t alt1Height, uint8_t alt2Width, uint8_t alt2Height);
-        bool                    generatePNGFile(fs::path &path, map<int, ImageCharacter>& characterMap, uint8_t charWidth, uint8_t charHeight, string &fontBaseName, bool renderColsx256FontImage);
+        int                     calculateLastCharacter(HDOSDFont& defaultFont);
+        void                    capturePNGCharacters(HDOSDFont& defaultFont, map<int, ImageCharacter>& characterMap, fs::path charactersPath, fs::path alt1, fs::path alt2, uint8_t thisWidth, uint8_t thisHeight, uint8_t alt1Width, uint8_t alt1Height, uint8_t alt2Width, uint8_t alt2Height);
+        int                     findMissingCharacters(HDOSDFont& defaultFont, map<int, ImageCharacter>& characterMap, int characterIndex, int workingCharacter, fs::path alt1, fs::path alt2, uint8_t thisWidth, uint8_t thisHeight, uint8_t alt1Width, uint8_t alt1Height, uint8_t alt2Width, uint8_t alt2Height);
+        bool                    generateAvatarPNGFile(fs::path &path, map<int, ImageCharacter>& characterMap, uint8_t charWidth, uint8_t charHeight, string &fontBaseName, bool renderColsx256FontImage);
+        bool                    generateHDZeroBMPFile(fs::path &path, map<int, ImageCharacter>& characterMap, uint8_t charWidth, uint8_t charHeight, string &fontBaseName, bool renderColsx256FontImage);
         void                    seedMaps();
 };

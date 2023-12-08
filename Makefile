@@ -4,11 +4,11 @@
 
 # Compiler settings - Can be customized.
 CC = g++
-CXXFLAGS = -std=c++20 -Wall
+CXXFLAGS = -std=c++20 -Wall -static
 LDFLAGS = 
 
 # Makefile settings - Can be customized.
-APPNAME = avatar-font-tool
+APPNAME = hdosd-font-tool
 EXT = .cpp
 SRCDIR = $(CURDIR)
 OBJDIR = obj

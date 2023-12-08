@@ -1,22 +1,20 @@
 # HD OSD Font Tool
-A tool for compiling fonts for HD OSD systems. The Avatar (Walksnail/Caddx) HD system is currently supported.
+A tool for compiling fonts for HD system OSDs. Currently, only the Avatar (Walksnail/Caddx) and HDZero HD systems are supported.
 
 ## Introduction
 This work was initially done as part of preparing the [INAV](https://github.com/iNavFlight) font for the Avatar HD system. In INAV, the characters each have their own image file. This makes editing and customising the fonts much simpler. My plan was to take the same approach with the Avatar font; and have a tool to compile the image used in their firmware. Inspiration coming from the [max67456tool](https://github.com/fiam/max7456tool) by fiam.
 
 ## The Tool
-The HD OSD Font Tool will take the individual character images and convert them in to the image used by Avatar. It will also convert alternate fonts found in the same main directory that the program is run from or pointed to. An optional name can also be given for the output files. This is all done without the need for configuration files. However, there are a couple of caveats for using the tool.
+The HD OSD Font Tool will take the individual character images and convert them in to the image used by OSDs. It will also convert alternate fonts found in the same main directory that the program is run from or pointed to. An optional name can also be given for the output files. This is all done without the need for configuration files. However, there are a couple of caveats for using the tool.
 
 ### The Avatar font image file
-The Avatar firmware uses a PNG file for it's fonts. It does use alpha transparency, so you can create some really cool symbols. The current Avatar firmware uses a font file which is one character wide by 256 characters x the number of pages high. At this point in time, INAV uses 2 pages (so 512 characters high). Whereas, BetaFlight and ArduPilot use 1 page (256 characters high). BetaFlight will start using 4 pages in version 4.4. This would have meant a 1024 character high image. Not only would this be unwieldy. It also may be to tall to open in some image editing tools. So, the format of the Avatar font file will change to multiple columns of 256 characters. ArduPilot would not change. That would still be 1 character by 256 characters. BetaFlight will be 4 characters by 256 characters. Finally, INAV will be 2 characters by 256 characters.
-
-This tool has been updated in preparation for this change. Currently, it will create the one character by 256 (BF/Ardu) or 512 (INAV) characters high font. To generate the multiple column font. Use the `-xcols` argument in the command line.
+The Avatar firmware uses a PNG file for it's fonts. It does use alpha transparency, so you can create some really cool symbols. The current Avatar firmware uses a font file which is one character wide by 256 characters x the number of pages high. At this point in time, INAV uses 2 pages (so 512 characters high). Whereas, BetaFlight and ArduPilot use 1 page (256 characters high). BetaFlight now also use 4 pages, from version 4.4.
 
 ### The image files
-Image files must be stored as PNG files with transparency. The Avatar system uses the transparent pixels, rather than having a mid grey background which is removed. This means that alpha transparency and full colour can be used in your fonts. There are three sizes of fonts:
+Image files must be stored as PNG files with transparency. The Avatar and WTF OS systems use transparent pixels, rather than having a mid grey background which is removed. This means that alpha transparency and full colour can be used in your fonts. HDZero uses a grey background for transparency. This will be added by the tool for HDZero. There are three sizes of fonts:
 - **12 x 18 pixels** This is the small font, the same size as analogue
-- **24 x 36 pixels** This is a mid size font
-- **36 x 54 pixels** This is the large font
+- **24 x 36 pixels** This is a mid size font for Avatar, and the font size for HDZero
+- **36 x 54 pixels** This is the large font for Avatar, and the font size for WTF OS
 
 The fonts should be places in directories named `12x18`, `24x36`, and `36x54` respectively.
 
@@ -37,7 +35,7 @@ The tool uses the directory structre to find and create fonts. Here is an exampl
 
 The main directory is the one highlighted in blue called `fonts`. I will call that the **font root**. You don't have to name it fonts, but the structure after that needs some rigidity. This is just the starting point, and where the compiled font files are stored. You can see the three INAV font files in the image.
 
-The first subdirectory you see is named `default`. This level of directory I will call **fontset** directories. The `default `directory must exist. For INAV, the default font directory can be found in the [INAV Configurator repository](https://github.com/iNavFlight/inav-configurator/tree/master/resources/osd/avatar). Maybe BetaFlight and ArduPilot will do the same at some point? If these appear, let me know and I will link here for convenience. This contains the default font for the firmware. Inside the `default` directory are the three font size directories, which must be named `12x18`, `24x36`, and `36x54`. The default font specifies if the fontset in question uses 256 or 512 characters. It is also used to fill in any missing characters.
+The first subdirectory you see is named `default`. This level of directory I will call **fontset** directories. The `default `directory must exist. For INAV, the default font directory can be found in the [INAV Configurator repository](https://github.com/iNavFlight/inav-configurator/tree/master/resources/osd/digital). Maybe BetaFlight and ArduPilot will do the same at some point? If these appear, let me know and I will link here for convenience. This contains the default font for the firmware. Inside the `default` directory are the three font size directories, which must be named `12x18`, `24x36`, and `36x54`. The default font specifies if the fontset in question uses 256 or 512 characters. It is also used to fill in any missing characters.
 
 Underneath the `default` directory, you can see it's sibling **fontset** called `supercoolfont`. This is where I will put my customised character images. Notice that I only have a `36x54` sub directory. I took the lasy option, and decided to only change the largest font. The tool will see that the characters are missing from the smaller sizes, and will find the best alternatives for them.
 
@@ -51,14 +49,15 @@ Currently, multiple character images are not found when searching for missing fo
 ### Using the tool
 The tool is a simple command line executable. You can put the tool in to the **font root** directory and just run it. Or, you can specify a path where the **font root** is located. There are only three argument options:
 - **?** Help
-- **-v** Use verbose mode. This will output more detailed messages during the program execution.
-- **-xcols** Generate a multi-column font file.
+- **-system** _AVATAR_ or _HDZERO_. If no option is provided, AVATAR is generated
 - **-p path** Specify the location of the font root.
 - **-n prefix_name** Which is added to the beginning of the compiled font filename.
+- **-xcols** Generate a multi-column font file. Note, this is not currently used by any HD system.
+- **-v** Use verbose mode. This will output more detailed messages during the program execution.
 
 If the tool is in the **font root**, you can just run
 ```
-avatar-font-tool
+hdosd-font-tool
 ```
 If you are in a different directory, or have added the tool to the OS path. You can use the first argument to specify the **font root**
 ```
@@ -74,9 +73,9 @@ Note that directories with spaces should be wrapped in quotess. The above option
 
 If you want, you can add a prefix to the filenames. To do this, you add a second argument to the command line. For example, adding the prefix **INAV**. These two examples show how to add the prefix. The first example for when the tool is in the **font root**. The second example when the tool is in the path.
 ```
-avatar-font-tool .\ INAV
+hdosd-font-tool .\ INAV
 
-avatar-font-tool -p "C:\my stuff\fonts" -n INAV
+hdosd-font-tool -p "C:\my stuff\fonts" -n INAV
 ```
 The above options will result in the generation of six Avatar font files:
 - INAV_default_12.png
