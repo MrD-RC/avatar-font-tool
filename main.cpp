@@ -59,7 +59,7 @@ int main(int argsCount, char *args[]) {
                  << "?       | This help screen" << newl
                  << "-p %p   | Path to the font root" << newl
                  << "-n %n   | Filename prefix" << newl
-                 << "-system | AVATAR or HDZERO" << newl
+                 << "-system | AVATAR or HDZERO (defaults to AVATAR)" << newl
                  << "-xcols  | Output a multi-column x 256 high character font image. For Avatar" << newl
                  << "-v      | Verbose mode (show more detailed messages)" << endl;
 
