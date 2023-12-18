@@ -155,6 +155,11 @@ bool HDOSDFont::generateFontImageFiles(fs::path exportPath, string fontBaseName,
             cout << "There was an issue generating the HDZero 24x36 " << showDirectory() << " file." << endl;
             aOK = false;
         }
+
+        if (aOK && !generateHDZeroBMPFile(exportPath, characters36X54, 36, 54, fontBaseName, renderColsx256FontImage)) {
+            cout << "There was an issue generating the HDZero 36x54 " << showDirectory() << " file." << endl;
+            aOK = false;
+        }
     }
 
     return aOK;
